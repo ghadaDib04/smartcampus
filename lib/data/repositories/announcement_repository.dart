@@ -1,28 +1,39 @@
-// AnnouncementRepository — the middleman between UI and data sources.
-// The UI calls this. This decides where data comes from.
-// Right now: always from the API.
-// Week 3: from SQLite when offline, API when online.
-
+import 'package:flutter/foundation.dart';
 import '../datasources/remote_data_source.dart';
+import '../datasources/local_data_source.dart';
 import '../models/announcement.dart';
+import '../../core/network/connectivity_service.dart';
 
 class AnnouncementRepository {
-  // The repository owns an instance of RemoteDataSource.
-  // It never exposes this to the outside — it is private.
   final RemoteDataSource _remoteDataSource;
+  final LocalDataSource? _localDataSource;
+  final ConnectivityService _connectivityService;
 
-  // Constructor — we pass the RemoteDataSource in from outside.
-  // This is called Dependency Injection — instead of creating
-  // RemoteDataSource inside this class, we receive it as a parameter.
-  // This makes testing easier and keeps classes loosely coupled.
   AnnouncementRepository({
     RemoteDataSource? remoteDataSource,
-  }) : _remoteDataSource = remoteDataSource ?? RemoteDataSource();
+    ConnectivityService? connectivityService,
+  })  : _remoteDataSource = remoteDataSource ?? RemoteDataSource(),
+        _localDataSource = kIsWeb ? null : LocalDataSource(),
+        _connectivityService = connectivityService ?? ConnectivityService();
 
-  // Fetches announcements.
-  // Currently always goes to the API.
-  // Returns the list on success, throws NetworkException on failure.
   Future<List<Announcement>> getAnnouncements() async {
-    return await _remoteDataSource.fetchAnnouncements();
+    final bool connected = await _connectivityService.isConnected();
+
+    if (connected) {
+      // Online : fetch depuis API
+      final List<Announcement> fresh =
+      await _remoteDataSource.fetchAnnouncements();
+      // Sauvegarde SQLite uniquement sur mobile
+      if (!kIsWeb && _localDataSource != null) {
+        await _localDataSource!.saveAnnouncements(fresh);
+      }
+      return fresh;
+    } else {
+      // Offline : SQLite sur mobile, liste vide sur web
+      if (!kIsWeb && _localDataSource != null) {
+        return await _localDataSource!.getAnnouncements();
+      }
+      return [];
+    }
   }
 }
