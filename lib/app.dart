@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'presentation/providers/announcement_provider.dart';
 import 'presentation/providers/settings_provider.dart';
 import 'presentation/providers/auth_provider.dart';
+import 'presentation/providers/event_provider.dart';
 import 'presentation/screens/timetable_screen.dart';
 import 'presentation/screens/main_screen.dart';
 import 'presentation/screens/announcements_screen.dart';
@@ -24,6 +25,7 @@ class SmartCampusApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AnnouncementProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()..loadSettings()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => EventProvider()),
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, settings, child) {
