@@ -1,26 +1,39 @@
-// EventRepository — same pattern as AnnouncementRepository.
-// Middleman between UI and data sources for Events.
-
+import 'package:flutter/foundation.dart';
 import '../datasources/remote_data_source.dart';
+import '../datasources/local_data_source.dart';
 import '../models/event.dart';
 import '../models/timetable_item.dart';
+import '../../core/network/connectivity_service.dart';
 
 class EventRepository {
   final RemoteDataSource _remoteDataSource;
+  final LocalDataSource? _localDataSource;
+  final ConnectivityService _connectivityService;
 
   EventRepository({
     RemoteDataSource? remoteDataSource,
-  }) : _remoteDataSource = remoteDataSource ?? RemoteDataSource();
+    ConnectivityService? connectivityService,
+  })  : _remoteDataSource = remoteDataSource ?? RemoteDataSource(),
+        _localDataSource = kIsWeb ? null : LocalDataSource(),
+        _connectivityService = connectivityService ?? ConnectivityService();
 
-  // Fetches events from the API.
   Future<List<Event>> getEvents() async {
-    return await _remoteDataSource.fetchEvents();
+    final bool connected = await _connectivityService.isConnected();
+
+    if (connected) {
+      final List<Event> fresh = await _remoteDataSource.fetchEvents();
+      if (!kIsWeb && _localDataSource != null) {
+        await _localDataSource!.saveEvents(fresh);
+      }
+      return fresh;
+    } else {
+      if (!kIsWeb && _localDataSource != null) {
+        return await _localDataSource!.getEvents();
+      }
+      return [];
+    }
   }
 
-  // Returns the hardcoded timetable.
-  // No API call needed — data lives in the model itself.
-  // This is synchronous — no async/await needed because
-  // we are not waiting for any network or disk operation.
   List<TimetableItem> getTimetable() {
     return TimetableItem.getSampleTimetable();
   }
