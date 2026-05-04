@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'presentation/providers/announcement_provider.dart';
 import 'presentation/providers/settings_provider.dart';
+import 'presentation/providers/auth_provider.dart';
+import 'presentation/screens/timetable_screen.dart';
 import 'presentation/screens/main_screen.dart';
 import 'presentation/screens/announcements_screen.dart';
 import 'presentation/screens/events_screen.dart';
 import 'presentation/screens/settings_screen.dart';
 import 'presentation/screens/home_screen.dart';
+import 'presentation/screens/splash_screen.dart';
+import 'presentation/screens/login_screen.dart';
 import 'core/constants/app_constants.dart';
+import 'core/services/notification_service.dart';
 
 class SmartCampusApp extends StatelessWidget {
   const SmartCampusApp({super.key});
@@ -18,16 +23,18 @@ class SmartCampusApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AnnouncementProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()..loadSettings()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, settings, child) {
           return MaterialApp(
             title: AppConstants.appName,
             debugShowCheckedModeBanner: false,
+            navigatorKey: navigatorKey,
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(
-                seedColor: const Color(0xFF1976D2),
-                secondary: const Color(0xFF00BCD4),
+                seedColor: const Color(0xFF27C7D4),
+                secondary: const Color(0xFFFE9063),
               ),
               useMaterial3: true,
               cardTheme: const CardThemeData(
@@ -39,8 +46,8 @@ class SmartCampusApp extends StatelessWidget {
             ),
             darkTheme: ThemeData(
               colorScheme: ColorScheme.fromSeed(
-                seedColor: const Color(0xFF1976D2),
-                secondary: const Color(0xFF00BCD4),
+                seedColor: const Color(0xFF27C7D4),
+                secondary: const Color(0xFFFE9063),
                 brightness: Brightness.dark,
               ),
               useMaterial3: true,
@@ -51,25 +58,39 @@ class SmartCampusApp extends StatelessWidget {
                 ),
               ),
             ),
-            // Maintenant le thème réagit immédiatement au toggle
             themeMode: settings.darkMode ? ThemeMode.dark : ThemeMode.light,
-            initialRoute: '/',
+            initialRoute: '/splash',
             onGenerateRoute: (RouteSettings settings) {
               switch (settings.name) {
+                case '/splash':
+                  return MaterialPageRoute(
+                      builder: (_) => const SplashScreen());
+                case '/login':
+                  return MaterialPageRoute(
+                      builder: (_) => const LoginScreen());
                 case '/':
-                  return MaterialPageRoute(builder: (_) => const MainScreen());
+                  return MaterialPageRoute(
+                      builder: (_) => const MainScreen());
                 case '/home':
-                  return MaterialPageRoute(builder: (_) => const HomeScreen());
+                  return MaterialPageRoute(
+                      builder: (_) => const HomeScreen());
                 case '/announcements':
-                  return MaterialPageRoute(builder: (_) => const AnnouncementsScreen());
+                  return MaterialPageRoute(
+                      builder: (_) => const AnnouncementsScreen());
                 case '/events':
-                  return MaterialPageRoute(builder: (_) => const EventsScreen());
+                  return MaterialPageRoute(
+                      builder: (_) => const EventsScreen());
                 case '/settings':
-                  return MaterialPageRoute(builder: (_) => const SettingsScreen());
+                  return MaterialPageRoute(
+                      builder: (_) => const SettingsScreen());
+                case '/timetable':
+                  return MaterialPageRoute(
+                      builder: (_) => const TimetableScreen());
                 default:
                   return MaterialPageRoute(
                     builder: (_) => Scaffold(
-                      body: Center(child: Text('Route ${settings.name} not found')),
+                      body: Center(
+                          child: Text('Route ${settings.name} not found')),
                     ),
                   );
               }
