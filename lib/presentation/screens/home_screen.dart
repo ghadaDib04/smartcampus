@@ -530,7 +530,6 @@ class _QuickAccessGrid extends StatelessWidget {
     (icon: Icons.calendar_today_outlined, label: 'Timetable', route: '/timetable', color: Color(0xFF27C7D4)),
     (icon: Icons.map_outlined, label: 'Map', route: '/map', color: Color(0xFFEA5863)),
     (icon: Icons.settings_outlined, label: 'Settings', route: '/settings', color: Color(0xFF555555)),
-    (icon: Icons.notifications_outlined, label: 'Notifications', route: '/notifications', color: Color(0xFFFE9063)),
   ];
 
   @override
