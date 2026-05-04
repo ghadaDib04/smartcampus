@@ -72,6 +72,9 @@ class LocalDataSource {
       'id': row['id'],
       'title': row['title'],
       'body': row['body'],
+      'category': row['category'],
+      'isUrgent': row['isUrgent'] == 1,
+      'date': row['date'],
     })).toList();
   }
 

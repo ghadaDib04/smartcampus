@@ -20,16 +20,13 @@ class AnnouncementRepository {
     final bool connected = await _connectivityService.isConnected();
 
     if (connected) {
-      // Online : fetch depuis API
       final List<Announcement> fresh =
       await _remoteDataSource.fetchAnnouncements();
-      // Sauvegarde SQLite uniquement sur mobile
       if (!kIsWeb && _localDataSource != null) {
         await _localDataSource!.saveAnnouncements(fresh);
       }
       return fresh;
     } else {
-      // Offline : SQLite sur mobile, liste vide sur web
       if (!kIsWeb && _localDataSource != null) {
         return await _localDataSource!.getAnnouncements();
       }
