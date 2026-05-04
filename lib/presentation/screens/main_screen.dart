@@ -3,9 +3,15 @@ import 'home_screen.dart';
 import 'announcements_screen.dart';
 import 'events_screen.dart';
 import 'settings_screen.dart';
+import 'timetable_screen.dart';
+// TODO: replace _MapPlaceholderScreen with the real import once Person 3 creates map_screen.dart:
+// import 'map_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
+
+  // Allows child screens to switch the bottom nav tab programmatically
+  static void Function(int)? switchTab;
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -20,6 +26,8 @@ class _MainScreenState extends State<MainScreen>
     AnnouncementsScreen(),
     EventsScreen(),
     SettingsScreen(),
+    TimetableScreen(),
+    _MapPlaceholderScreen(), // TODO: replace with MapScreen() when map_screen.dart exists
   ];
 
   late AnimationController _animController;
@@ -27,6 +35,7 @@ class _MainScreenState extends State<MainScreen>
   @override
   void initState() {
     super.initState();
+    MainScreen.switchTab = _onItemTapped;
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 350),
@@ -36,6 +45,7 @@ class _MainScreenState extends State<MainScreen>
 
   @override
   void dispose() {
+    MainScreen.switchTab = null;
     _animController.dispose();
     super.dispose();
   }
@@ -57,8 +67,8 @@ class _MainScreenState extends State<MainScreen>
     // Dark mode : fond sombre, light mode : blanc
     final navBgColor = isDark ? const Color(0xFF1A1A2E) : Colors.white;
     final shadowColor = isDark
-        ? Colors.black.withOpacity(0.4)
-        : const Color(0xFF1A1A2E).withOpacity(0.08);
+        ? Colors.black.withValues(alpha: 0.4)
+        : const Color(0xFF1A1A2E).withValues(alpha: 0.08);
 
     return Scaffold(
       body: IndexedStack(
@@ -80,7 +90,7 @@ class _MainScreenState extends State<MainScreen>
               offset: const Offset(0, -4),
             ),
             BoxShadow(
-              color: const Color(0xFF27C7D4).withOpacity(0.06),
+              color: const Color(0xFF27C7D4).withValues(alpha: 0.06),
               blurRadius: 40,
               offset: const Offset(0, -8),
             ),
@@ -96,6 +106,8 @@ class _MainScreenState extends State<MainScreen>
                 _buildNavItem(1, Icons.campaign_outlined, Icons.campaign, 'News', isDark),
                 _buildNavItem(2, Icons.event_outlined, Icons.event, 'Events', isDark),
                 _buildNavItem(3, Icons.settings_outlined, Icons.settings, 'Settings', isDark),
+                _buildNavItem(4, Icons.calendar_today_outlined, Icons.calendar_today, 'Timetable', isDark),
+                _buildNavItem(5, Icons.map_outlined, Icons.map, 'Map', isDark),
               ],
             ),
           ),
@@ -110,12 +122,12 @@ class _MainScreenState extends State<MainScreen>
       IconData activeIcon,
       String label,
       bool isDark,
-      ) {
+  ) {
     final bool isSelected = _currentIndex == index;
 
 
     final unselectedColor =
-    isDark ? Colors.white.withOpacity(0.5) : const Color(0xFF555555);
+    isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF555555);
 
     return GestureDetector(
       onTap: () => _onItemTapped(index),
@@ -136,7 +148,7 @@ class _MainScreenState extends State<MainScreen>
           boxShadow: isSelected
               ? [
             BoxShadow(
-              color: const Color(0xFF27C7D4).withOpacity(0.35),
+              color: const Color(0xFF27C7D4).withValues(alpha: 0.35),
               blurRadius: 16,
               spreadRadius: 2,
               offset: const Offset(0, 4),
@@ -174,6 +186,59 @@ class _MainScreenState extends State<MainScreen>
                 letterSpacing: isSelected ? 0.5 : 0,
               ),
               child: Text(label),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Map Placeholder — remove when Person 3 delivers map_screen.dart
+// Replace: _MapPlaceholderScreen() → MapScreen()
+//          and uncomment: import 'map_screen.dart';
+// ─────────────────────────────────────────────────────────────
+class _MapPlaceholderScreen extends StatelessWidget {
+  const _MapPlaceholderScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF27C7D4),
+        foregroundColor: Colors.white,
+        centerTitle: true,
+        elevation: 0,
+        title: const Text(
+          'Map',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        ),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.map_outlined,
+              size: 64,
+              color: const Color(0xFF27C7D4).withValues(alpha: 0.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Map coming soon',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white70 : const Color(0xFF1A1A2E),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Waiting for Person 3 — map_screen.dart',
+              style: TextStyle(fontSize: 13, color: Color(0xFF555555)),
             ),
           ],
         ),
