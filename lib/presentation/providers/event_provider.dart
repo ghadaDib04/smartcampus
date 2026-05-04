@@ -32,17 +32,34 @@ class EventProvider extends ChangeNotifier {
     _setState(EventState.loading);
     try {
       final bool connected = await _connectivityService.isConnected();
-      final List<Event> result = await _repository.getEvents();
-      _events = result;
+
       if (!connected) {
+        // No connectivity — go straight to cache
+        final List<Event> cached = await _repository.getCachedEvents();
+        _events = cached;
         _errorMessage = 'You are offline. Showing cached content.';
         _setState(EventState.offline);
-      } else {
-        _setState(EventState.success);
+        return;
       }
+
+      // Connected — fetch from API (repository saves to cache internally)
+      final List<Event> result = await _repository.getEvents();
+      _events = result;
+      _setState(EventState.success);
+
     } catch (e) {
-      _errorMessage = 'Error: ${e.toString()}';
-      _setState(EventState.error);
+      // API call failed even though connected (e.g. connectivity_plus lied)
+      // Try cache as fallback
+      try {
+        final List<Event> cached = await _repository.getCachedEvents();
+        _events = cached;
+        _errorMessage = 'You are offline. Showing cached content.';
+        _setState(EventState.offline);
+      } catch (_) {
+        // No cache either
+        _errorMessage = e.toString();
+        _setState(EventState.error);
+      }
     }
   }
 

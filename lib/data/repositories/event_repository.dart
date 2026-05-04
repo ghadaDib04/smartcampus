@@ -18,20 +18,18 @@ class EventRepository {
         _connectivityService = connectivityService ?? ConnectivityService();
 
   Future<List<Event>> getEvents() async {
-    final bool connected = await _connectivityService.isConnected();
-
-    if (connected) {
-      final List<Event> fresh = await _remoteDataSource.fetchEvents();
-      if (!kIsWeb && _localDataSource != null) {
-        await _localDataSource!.saveEvents(fresh);
-      }
-      return fresh;
-    } else {
-      if (!kIsWeb && _localDataSource != null) {
-        return await _localDataSource!.getEvents();
-      }
-      return [];
+    final List<Event> fresh = await _remoteDataSource.fetchEvents();
+    if (!kIsWeb && _localDataSource != null) {
+      await _localDataSource!.saveEvents(fresh);
     }
+    return fresh;
+  }
+
+  Future<List<Event>> getCachedEvents() async {
+    if (!kIsWeb && _localDataSource != null) {
+      return await _localDataSource!.getEvents();
+    }
+    return [];
   }
 
   List<TimetableItem> getTimetable() {
