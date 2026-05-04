@@ -1,4 +1,3 @@
-
 enum DayOfWeek {
   monday,
   tuesday,
@@ -9,25 +8,16 @@ enum DayOfWeek {
   sunday,
 }
 
-
 extension DayOfWeekExtension on DayOfWeek {
-  // Returns the human-readable name of the day
   String get displayName {
     switch (this) {
-      case DayOfWeek.monday:
-        return 'Monday';
-      case DayOfWeek.tuesday:
-        return 'Tuesday';
-      case DayOfWeek.wednesday:
-        return 'Wednesday';
-      case DayOfWeek.thursday:
-        return 'Thursday';
-      case DayOfWeek.friday:
-        return 'Friday';
-      case DayOfWeek.saturday:
-        return 'Saturday';
-      case DayOfWeek.sunday:
-        return 'Sunday';
+      case DayOfWeek.monday: return 'Monday';
+      case DayOfWeek.tuesday: return 'Tuesday';
+      case DayOfWeek.wednesday: return 'Wednesday';
+      case DayOfWeek.thursday: return 'Thursday';
+      case DayOfWeek.friday: return 'Friday';
+      case DayOfWeek.saturday: return 'Saturday';
+      case DayOfWeek.sunday: return 'Sunday';
     }
   }
 }
@@ -40,7 +30,9 @@ class TimetableItem {
   final String startTime;
   final String endTime;
   final DayOfWeek day;
-  final String type; // 'Lecture', 'Lab', 'Tutorial', 'Workshop'
+  final String type;
+  final String group;
+  final String specialty;
 
   const TimetableItem({
     required this.id,
@@ -51,11 +43,10 @@ class TimetableItem {
     required this.endTime,
     required this.day,
     required this.type,
+    required this.group,
+    required this.specialty,
   });
 
-  // toJson for SQLite storage in Week 3.
-  // Notice we store the enum as a string using .name
-  // DayOfWeek.monday.name returns the string 'monday'
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -64,13 +55,13 @@ class TimetableItem {
       'room': room,
       'startTime': startTime,
       'endTime': endTime,
-      // .name converts the enum value to its string name
       'day': day.name,
       'type': type,
+      'group': group,
+      'specialty': specialty,
     };
   }
 
-  // fromDb — reads a TimetableItem back from SQLite.
   factory TimetableItem.fromDb(Map<String, dynamic> db) {
     return TimetableItem(
       id: db['id'] as int,
@@ -79,31 +70,31 @@ class TimetableItem {
       room: db['room'] as String,
       startTime: db['startTime'] as String,
       endTime: db['endTime'] as String,
-      // Convert the stored string back to a DayOfWeek enum value.
-      // DayOfWeek.values is the list of all enum values.
-      // .firstWhere finds the one whose .name matches the stored string.
-      day: DayOfWeek.values.firstWhere(
-        (d) => d.name == db['day'] as String,
-      ),
+      day: DayOfWeek.values.firstWhere((d) => d.name == db['day']),
       type: db['type'] as String,
+      group: db['group'] as String,
+      specialty: db['specialty'] as String,
     );
   }
 
-  // Static method that returns a hardcoded weekly timetable.
-  // This is what the repository will return instead of making an API call.
-  // Static means you call it as TimetableItem.getSampleTimetable()
-  // without needing to create a TimetableItem object first.
-  static List<TimetableItem> getSampleTimetable() {
-    return [
+
+  static List<TimetableItem> getSampleTimetable({
+    String group = '1',
+    String specialty = 'Computer Science',
+  }) {
+    final all = [
+      // ── Computer Science — Group 1 ──────────────────
       const TimetableItem(
         id: 1,
         subject: 'Mobile Operating Systems',
         professor: 'Dr. Benali',
         room: 'Building A, Room 101',
-        startTime: '08:00',
-        endTime: '09:30',
+        startTime: '17:42',
+        endTime: '17:30',
         day: DayOfWeek.monday,
         type: 'Lecture',
+        group: '1',
+        specialty: 'Computer Science',
       ),
       const TimetableItem(
         id: 2,
@@ -114,19 +105,11 @@ class TimetableItem {
         endTime: '11:30',
         day: DayOfWeek.monday,
         type: 'Lab',
+        group: '1',
+        specialty: 'Computer Science',
       ),
       const TimetableItem(
         id: 3,
-        subject: 'Software Engineering',
-        professor: 'Dr. Khelil',
-        room: 'Building B, Room 204',
-        startTime: '13:00',
-        endTime: '14:30',
-        day: DayOfWeek.tuesday,
-        type: 'Lecture',
-      ),
-      const TimetableItem(
-        id: 4,
         subject: 'Computer Networks',
         professor: 'Dr. Amrani',
         room: 'Building A, Room 105',
@@ -134,38 +117,263 @@ class TimetableItem {
         endTime: '09:30',
         day: DayOfWeek.wednesday,
         type: 'Lecture',
+        group: '1',
+        specialty: 'Computer Science',
+      ),
+      const TimetableItem(
+        id: 4,
+        subject: 'Algorithms',
+        professor: 'Dr. Hadj',
+        room: 'Building A, Room 203',
+        startTime: '14:00',
+        endTime: '15:30',
+        day: DayOfWeek.thursday,
+        type: 'Lecture',
+        group: '1',
+        specialty: 'Computer Science',
       ),
       const TimetableItem(
         id: 5,
         subject: 'Mobile Operating Systems',
         professor: 'Dr. Benali',
         room: 'Lab 2',
-        startTime: '10:00',
-        endTime: '12:00',
-        day: DayOfWeek.wednesday,
+        startTime: '09:00',
+        endTime: '11:00',
+        day: DayOfWeek.friday,
         type: 'Lab',
+        group: '1',
+        specialty: 'Computer Science',
       ),
+
+      // ── Computer Science — Group 2 ──────────────────
       const TimetableItem(
         id: 6,
-        subject: 'Human Computer Interaction',
-        professor: 'Dr. Saadi',
-        room: 'Building C, Room 301',
-        startTime: '14:00',
-        endTime: '15:30',
-        day: DayOfWeek.thursday,
-        type: 'Tutorial',
+        subject: 'Mobile Operating Systems',
+        professor: 'Dr. Benali',
+        room: 'Building A, Room 101',
+        startTime: '10:00',
+        endTime: '11:30',
+        day: DayOfWeek.monday,
+        type: 'Lecture',
+        group: '2',
+        specialty: 'Computer Science',
       ),
       const TimetableItem(
         id: 7,
         subject: 'Database Systems',
         professor: 'Dr. Meziane',
-        room: 'Building B, Room 202',
+        room: 'Lab 3',
+        startTime: '13:00',
+        endTime: '14:30',
+        day: DayOfWeek.tuesday,
+        type: 'Lab',
+        group: '2',
+        specialty: 'Computer Science',
+      ),
+      const TimetableItem(
+        id: 8,
+        subject: 'Computer Networks',
+        professor: 'Dr. Amrani',
+        room: 'Building A, Room 105',
+        startTime: '10:00',
+        endTime: '11:30',
+        day: DayOfWeek.wednesday,
+        type: 'Lecture',
+        group: '2',
+        specialty: 'Computer Science',
+      ),
+      const TimetableItem(
+        id: 9,
+        subject: 'Algorithms',
+        professor: 'Dr. Hadj',
+        room: 'Building B, Room 101',
+        startTime: '08:00',
+        endTime: '09:30',
+        day: DayOfWeek.thursday,
+        type: 'Lecture',
+        group: '2',
+        specialty: 'Computer Science',
+      ),
+      const TimetableItem(
+        id: 10,
+        subject: 'Mobile Operating Systems',
+        professor: 'Dr. Benali',
+        room: 'Lab 1',
+        startTime: '13:00',
+        endTime: '15:00',
+        day: DayOfWeek.friday,
+        type: 'Lab',
+        group: '2',
+        specialty: 'Computer Science',
+      ),
+
+      // ── Software Engineering — Group 1 ──────────────
+      const TimetableItem(
+        id: 11,
+        subject: 'Software Engineering',
+        professor: 'Dr. Khelil',
+        room: 'Building B, Room 204',
+        startTime: '08:00',
+        endTime: '09:30',
+        day: DayOfWeek.monday,
+        type: 'Lecture',
+        group: '1',
+        specialty: 'Software Engineering',
+      ),
+      const TimetableItem(
+        id: 12,
+        subject: 'Design Patterns',
+        professor: 'Dr. Zerrouk',
+        room: 'Building B, Room 101',
+        startTime: '10:00',
+        endTime: '11:30',
+        day: DayOfWeek.tuesday,
+        type: 'Lecture',
+        group: '1',
+        specialty: 'Software Engineering',
+      ),
+      const TimetableItem(
+        id: 13,
+        subject: 'Software Testing',
+        professor: 'Dr. Mammeri',
+        room: 'Lab 4',
+        startTime: '13:00',
+        endTime: '15:00',
+        day: DayOfWeek.wednesday,
+        type: 'Lab',
+        group: '1',
+        specialty: 'Software Engineering',
+      ),
+      const TimetableItem(
+        id: 14,
+        subject: 'Agile Methods',
+        professor: 'Dr. Khelil',
+        room: 'Building C, Room 201',
+        startTime: '08:00',
+        endTime: '09:30',
+        day: DayOfWeek.friday,
+        type: 'Tutorial',
+        group: '1',
+        specialty: 'Software Engineering',
+      ),
+
+      // ── Software Engineering — Group 2 ──────────────
+      const TimetableItem(
+        id: 15,
+        subject: 'Software Engineering',
+        professor: 'Dr. Khelil',
+        room: 'Building B, Room 205',
+        startTime: '13:00',
+        endTime: '14:30',
+        day: DayOfWeek.monday,
+        type: 'Lecture',
+        group: '2',
+        specialty: 'Software Engineering',
+      ),
+      const TimetableItem(
+        id: 16,
+        subject: 'Design Patterns',
+        professor: 'Dr. Zerrouk',
+        room: 'Building B, Room 102',
+        startTime: '08:00',
+        endTime: '09:30',
+        day: DayOfWeek.wednesday,
+        type: 'Lecture',
+        group: '2',
+        specialty: 'Software Engineering',
+      ),
+      const TimetableItem(
+        id: 17,
+        subject: 'Software Testing',
+        professor: 'Dr. Mammeri',
+        room: 'Lab 5',
+        startTime: '10:00',
+        endTime: '12:00',
+        day: DayOfWeek.thursday,
+        type: 'Lab',
+        group: '2',
+        specialty: 'Software Engineering',
+      ),
+      const TimetableItem(
+        id: 18,
+        subject: 'Agile Methods',
+        professor: 'Dr. Khelil',
+        room: 'Building C, Room 202',
+        startTime: '13:00',
+        endTime: '14:30',
+        day: DayOfWeek.friday,
+        type: 'Tutorial',
+        group: '2',
+        specialty: 'Software Engineering',
+      ),
+
+      // ── Networks & Security — Group 1 ───────────────
+      const TimetableItem(
+        id: 19,
+        subject: 'Network Security',
+        professor: 'Dr. Boukra',
+        room: 'Building A, Room 302',
+        startTime: '08:00',
+        endTime: '09:30',
+        day: DayOfWeek.monday,
+        type: 'Lecture',
+        group: '1',
+        specialty: 'Networks & Security',
+      ),
+      const TimetableItem(
+        id: 20,
+        subject: 'Cryptography',
+        professor: 'Dr. Saadi',
+        room: 'Building A, Room 301',
+        startTime: '10:00',
+        endTime: '11:30',
+        day: DayOfWeek.tuesday,
+        type: 'Lecture',
+        group: '1',
+        specialty: 'Networks & Security',
+      ),
+      const TimetableItem(
+        id: 21,
+        subject: 'Network Administration',
+        professor: 'Dr. Boukra',
+        room: 'Lab Network 1',
+        startTime: '13:00',
+        endTime: '15:00',
+        day: DayOfWeek.wednesday,
+        type: 'Lab',
+        group: '1',
+        specialty: 'Networks & Security',
+      ),
+      const TimetableItem(
+        id: 22,
+        subject: 'Ethical Hacking',
+        professor: 'Dr. Saadi',
+        room: 'Lab Security',
+        startTime: '08:00',
+        endTime: '10:00',
+        day: DayOfWeek.thursday,
+        type: 'Lab',
+        group: '1',
+        specialty: 'Networks & Security',
+      ),
+      const TimetableItem(
+        id: 23,
+        subject: 'Cryptography',
+        professor: 'Dr. Saadi',
+        room: 'Building A, Room 301',
         startTime: '09:00',
         endTime: '10:30',
         day: DayOfWeek.friday,
-        type: 'Lecture',
+        type: 'Tutorial',
+        group: '1',
+        specialty: 'Networks & Security',
       ),
     ];
+
+    return all
+        .where((item) =>
+    item.group == group && item.specialty == specialty)
+        .toList();
   }
 
   @override
