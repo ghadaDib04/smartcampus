@@ -4,7 +4,7 @@ class AppConstants {
   AppConstants._();
 
   // App identity
-  static const String appName = 'SmartCampus';
+  static const String appName = 'UniSy';
 
   // Base URL for JSONPlaceholder — our fake REST API for development
   // In a real app, this would point to your university's backend

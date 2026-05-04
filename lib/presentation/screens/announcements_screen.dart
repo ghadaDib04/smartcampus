@@ -1,7 +1,3 @@
-// AnnouncementsScreen — displays announcements fetched from the API.
-// Demonstrates: networking, state management, loading/error/offline states.
-// This screen is the primary Week 2 deliverable.
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/announcement_provider.dart';
@@ -14,123 +10,149 @@ class AnnouncementsScreen extends StatefulWidget {
   State<AnnouncementsScreen> createState() => _AnnouncementsScreenState();
 }
 
-class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
+class _AnnouncementsScreenState extends State<AnnouncementsScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  final List<String> _tabs = ['All', 'Academic', 'Events', 'General', 'Emergency'];
+
   @override
   void initState() {
     super.initState();
-    // Trigger data load after the first frame is rendered.
-    // We use addPostFrameCallback to ensure the widget tree is
-    // fully built before we start modifying provider state.
-    // This is the correct pattern — never call provider methods
-    // directly in initState() without this wrapper.
+    _tabController = TabController(length: _tabs.length, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // read() gets the provider once without listening.
-      // We use read() here instead of watch() because we are
-      // inside a callback, not inside build().
       context.read<AnnouncementProvider>().loadAnnouncements();
     });
   }
 
   @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  List<Announcement> _filtered(List<Announcement> all, int tabIndex) {
+    if (tabIndex == 0) return all;
+    return all.where((a) => a.category == _tabs[tabIndex]).toList();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Announcements'),
+        backgroundColor: const Color(0xFF27C7D4),
+        foregroundColor: Colors.white,
         centerTitle: true,
-        // Pull to refresh action button
+        elevation: 0,
+        title: const Text(
+          'Announcements',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh',
-            onPressed: () {
-              context.read<AnnouncementProvider>().loadAnnouncements();
-            },
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: () =>
+                context.read<AnnouncementProvider>().loadAnnouncements(),
           ),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          indicatorColor: Colors.white,
+          indicatorWeight: 3,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white60,
+          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          tabAlignment: TabAlignment.start,
+          tabs: _tabs.map((t) => Tab(text: t)).toList(),
+        ),
       ),
-
-      // Consumer listens to AnnouncementProvider.
-      // Rebuilds only this subtree when notifyListeners() is called.
-      // 'provider' is the AnnouncementProvider instance.
-      // 'child' is an optional widget that never rebuilds — we don't use it here.
       body: Consumer<AnnouncementProvider>(
         builder: (context, provider, child) {
-          // OFFLINE STATE
-          if (provider.isOffline) {
-            return _buildOfflineState(provider.errorMessage);
-          }
-
-          // LOADING STATE
-          if (provider.isLoading) {
-            return _buildLoadingState();
-          }
-
-          // ERROR STATE
-          if (provider.hasError) {
-            return _buildErrorState(provider.errorMessage, provider);
-          }
-
-          // SUCCESS STATE — show the list
+          if (provider.isLoading) return _buildLoading();
+          if (provider.hasError) return _buildError(provider, isDark);
+          if (provider.isOffline) return _buildOffline(provider, isDark);
           if (provider.hasData) {
-            return _buildAnnouncementList(provider.announcements);
+            return TabBarView(
+              controller: _tabController,
+              children: _tabs.asMap().entries.map((entry) {
+                final filtered = _filtered(provider.announcements, entry.key);
+                return _buildList(filtered, isDark);
+              }).toList(),
+            );
           }
-
-          // INITIAL STATE — before anything has been triggered
           return const SizedBox.shrink();
         },
       ),
     );
   }
 
-  // LOADING STATE widget — shown while API call is in progress
-  Widget _buildLoadingState() {
-    return const Center(
+  // ── Loading ───────────────────────────────────────
+  Widget _buildLoading() {
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
+          const CircularProgressIndicator(color: Color(0xFF27C7D4)),
+          const SizedBox(height: 16),
           Text(
             'Fetching announcements...',
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: Colors.grey[500], fontSize: 14),
           ),
         ],
       ),
     );
   }
 
-  // ERROR STATE widget — shown when API call fails
-  Widget _buildErrorState(String message, AnnouncementProvider provider) {
+  // ── Error ─────────────────────────────────────────
+  Widget _buildError(AnnouncementProvider provider, bool isDark) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red,
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEA5863).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.error_outline_rounded,
+                  size: 40, color: Color(0xFFEA5863)),
             ),
-            const SizedBox(height: 16),
-            const Text(
+            const SizedBox(height: 20),
+            Text(
               'Something went wrong',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : const Color(0xFF1A1A2E),
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              message,
+              provider.errorMessage,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey),
+              style: const TextStyle(color: Color(0xFF555555), fontSize: 13),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF27C7D4),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
               onPressed: () => provider.loadAnnouncements(),
-              icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: const Text('Try Again',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -138,205 +160,317 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
     );
   }
 
-  // OFFLINE STATE widget — shown when device has no internet
-  Widget _buildOfflineState(String message) {
+  // ── Offline ───────────────────────────────────────
+  Widget _buildOffline(AnnouncementProvider provider, bool isDark) {
     return Column(
       children: [
-        // Offline banner at the top
         Container(
           width: double.infinity,
-          color: Colors.orange.shade100,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 10,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFE9063).withOpacity(0.15),
+            border: Border(
+              bottom: BorderSide(
+                color: const Color(0xFFFE9063).withOpacity(0.3),
+              ),
+            ),
           ),
           child: Row(
             children: [
-              const Icon(
-                Icons.cloud_off,
-                color: Colors.orange,
-                size: 20,
-              ),
+              const Icon(Icons.cloud_off_rounded,
+                  color: Color(0xFFFE9063), size: 18),
               const SizedBox(width: 8),
-              Expanded(
+              const Text(
+                'Offline — showing cached content',
+                style: TextStyle(
+                  color: Color(0xFFFE9063),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFE9063).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: Text(
-                  message,
+                  '${provider.announcements.length} cached',
                   style: const TextStyle(
-                    color: Colors.orange,
-                    fontSize: 13,
+                    color: Color(0xFFFE9063),
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ],
           ),
         ),
-        // Empty state below the banner
-        const Expanded(
-          child: Center(
+        Expanded(
+          child: provider.announcements.isEmpty
+              ? Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.wifi_off, size: 64, color: Colors.grey),
-                SizedBox(height: 16),
-                Text(
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.wifi_off_rounded,
+                      size: 40, color: Colors.grey),
+                ),
+                const SizedBox(height: 20),
+                const Text(
                   'No cached content yet',
                   style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey),
                 ),
-                SizedBox(height: 8),
-                Text(
-                  'Connect to the internet to load announcements',
-                  style: TextStyle(color: Colors.grey),
+                const SizedBox(height: 8),
+                const Text(
+                  'Connect to internet to load announcements',
+                  style:
+                  TextStyle(color: Colors.grey, fontSize: 13),
                   textAlign: TextAlign.center,
                 ),
               ],
             ),
+          )
+              : TabBarView(
+            controller: _tabController,
+            children: _tabs.asMap().entries.map((entry) {
+              final filtered = _filtered(provider.announcements, entry.key);
+              return _buildList(filtered, isDark);
+            }).toList(),
           ),
         ),
       ],
     );
   }
 
-  // SUCCESS STATE — builds the scrollable list of announcements
-  Widget _buildAnnouncementList(List<Announcement> announcements) {
+  // ── List ──────────────────────────────────────────
+  Widget _buildList(List<Announcement> announcements, bool isDark) {
+    if (announcements.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.inbox_rounded,
+                size: 56, color: Colors.grey.withOpacity(0.5)),
+            const SizedBox(height: 16),
+            const Text('No announcements',
+                style: TextStyle(color: Colors.grey, fontSize: 15)),
+          ],
+        ),
+      );
+    }
+
     return RefreshIndicator(
-      // Pull to refresh — calls loadAnnouncements() again
-      onRefresh: () async {
-        await context.read<AnnouncementProvider>().loadAnnouncements();
-      },
+      color: const Color(0xFF27C7D4),
+      onRefresh: () async =>
+          context.read<AnnouncementProvider>().loadAnnouncements(),
       child: ListView.builder(
-        // Add padding so last item isn't hidden behind nav bar
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         itemCount: announcements.length,
-        // ListView.builder only builds items currently visible on screen.
-        // Much more efficient than building all 20 items at once.
-        // This directly demonstrates list optimization for your report.
         itemBuilder: (context, index) {
-          final Announcement announcement = announcements[index];
-          return _buildAnnouncementCard(announcement);
+          return _AnnouncementCard(
+            announcement: announcements[index],
+            isDark: isDark,
+          );
         },
       ),
     );
   }
+}
 
-  // Builds one announcement card
-  Widget _buildAnnouncementCard(Announcement announcement) {
-    // Map category names to colors for visual distinction
-    final Map<String, Color> categoryColors = {
-      'Academic': Colors.blue,
-      'Events': Colors.green,
-      'General': Colors.grey,
-      'Emergency': Colors.red,
-    };
+// ─────────────────────────────────────────────────────────────
+// Announcement Card
+// ─────────────────────────────────────────────────────────────
+class _AnnouncementCard extends StatelessWidget {
+  const _AnnouncementCard({
+    required this.announcement,
+    required this.isDark,
+  });
 
-    final Color categoryColor =
-        categoryColors[announcement.category] ?? Colors.grey;
+  final Announcement announcement;
+  final bool isDark;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top row — category badge + urgent indicator + date
-            Row(
-              children: [
-                // Category badge
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: categoryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: categoryColor),
-                  ),
-                  child: Text(
-                    announcement.category,
-                    style: TextStyle(
-                      color: categoryColor,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-
-                // Urgent badge — only shown for urgent announcements
-                if (announcement.isUrgent) ...[
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red),
-                    ),
-                    child: const Text(
-                      'URGENT',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-
-                const Spacer(),
-
-                // Date
-                Text(
-                  _formatDate(announcement.date),
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 10),
-
-            // Title
-            Text(
-              announcement.title,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 6),
-
-            // Body preview — limited to 2 lines
-            Text(
-              announcement.body,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 13,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  Color _categoryColor(String category) {
+    switch (category) {
+      case 'Academic': return const Color(0xFF27C7D4);
+      case 'Events': return const Color(0xFFFE9063);
+      case 'Emergency': return const Color(0xFFEA5863);
+      default: return const Color(0xFF555555);
+    }
   }
 
-  // Formats a DateTime to a readable string like 'Apr 21'
+  IconData _categoryIcon(String category) {
+    switch (category) {
+      case 'Academic': return Icons.school_outlined;
+      case 'Events': return Icons.event_outlined;
+      case 'Emergency': return Icons.warning_amber_rounded;
+      default: return Icons.campaign_outlined;
+    }
+  }
+
   String _formatDate(DateTime date) {
-    const List<String> months = [
+    const months = [
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
     ];
     return '${months[date.month - 1]} ${date.day}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cardColor =
+    isDark ? const Color(0xFF1A1A2E) : const Color(0xFFFDF0E7);
+    final color = _categoryColor(announcement.category);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: announcement.isUrgent
+            ? Border.all(color: const Color(0xFFEA5863).withOpacity(0.5), width: 1.5)
+            : null,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Top color bar
+          Container(
+            height: 4,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header row
+                Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(_categoryIcon(announcement.category),
+                          color: color, size: 18),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: color.withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  announcement.category,
+                                  style: TextStyle(
+                                    color: color,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              if (announcement.isUrgent) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFEA5863)
+                                        .withOpacity(0.12),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Row(
+                                    children: [
+                                      Icon(Icons.priority_high_rounded,
+                                          size: 10,
+                                          color: Color(0xFFEA5863)),
+                                      SizedBox(width: 2),
+                                      Text(
+                                        'URGENT',
+                                        style: TextStyle(
+                                          color: Color(0xFFEA5863),
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              const Spacer(),
+                              Text(
+                                _formatDate(announcement.date),
+                                style: const TextStyle(
+                                  color: Color(0xFF555555),
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Title
+                Text(
+                  announcement.title,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                // Body
+                Text(
+                  announcement.body,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF555555),
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
