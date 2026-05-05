@@ -101,8 +101,8 @@ class TimetableItem {
         subject: 'Database Systems',
         professor: 'Dr. Meziane',
         room: 'Lab 3',
-        startTime: '10:00',
-        endTime: '11:30',
+        startTime: '15:30',
+        endTime: '17:30',
         day: DayOfWeek.monday,
         type: 'Lab',
         group: '1',
@@ -368,6 +368,18 @@ class TimetableItem {
         group: '1',
         specialty: 'Networks & Security',
       ),
+      const TimetableItem(
+           id: 101,
+           subject: 'Mobile Operating Systems',
+           professor: 'Dr. Benali',
+           room: 'Room 101',
+           startTime: '16:22',
+           endTime: '17:15',
+           day: DayOfWeek.tuesday,
+           type: 'Lecture',
+           group: '1',
+           specialty: 'Computer Science',
+      ),     
     ];
 
     return all

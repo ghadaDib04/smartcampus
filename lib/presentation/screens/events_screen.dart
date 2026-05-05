@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 import '../providers/event_provider.dart';
 import '../../data/models/event.dart';
 
@@ -13,29 +16,33 @@ class EventsScreen extends StatefulWidget {
 }
 
 class _EventsScreenState extends State<EventsScreen> {
-  Future<void> _pickImageFromCamera() async {
-    // Request camera permission
+  // Take photo for a SPECIFIC event
+  Future<void> _pickImageForEvent(Event event) async {
     final status = await Permission.camera.request();
 
     if (status.isGranted) {
-      // Permission granted — open camera
       final picker = ImagePicker();
       final XFile? image = await picker.pickImage(source: ImageSource.camera);
+
       if (image != null && mounted) {
+        // Copy from cache to permanent app documents
+        final String savedPath = await _saveImagePermanently(image.path);
+
+        // Update the event with the photo path
+        setState(() {
+          event.photoPath = savedPath;
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Image captured: ${image.path}'),
+            content: Text('Photo saved for "${event.title}"'),
             backgroundColor: const Color(0xFF27C7D4),
           ),
         );
       }
     } else if (status.isPermanentlyDenied) {
-      // User selected "Don't ask again" — open app settings
-      if (mounted) {
-        _showSettingsDialog();
-      }
+      if (mounted) _showSettingsDialog();
     } else {
-      // Denied but can ask again
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -45,6 +52,49 @@ class _EventsScreenState extends State<EventsScreen> {
         );
       }
     }
+  }
+
+  // Copy image from temp cache to permanent app documents directory
+  Future<String> _saveImagePermanently(String tempPath) async {
+    final Directory appDir = await getApplicationDocumentsDirectory();
+    final String fileName = 'event_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final String permanentPath = path.join(appDir.path, 'event_photos', fileName);
+
+    // Create directory if it doesn't exist
+    await Directory(path.join(appDir.path, 'event_photos')).create(recursive: true);
+
+    // Copy file
+    final File tempFile = File(tempPath);
+    await tempFile.copy(permanentPath);
+
+    return permanentPath;
+  }
+
+  // View photo in full screen
+  void _viewPhoto(String photoPath) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
+            elevation: 0,
+          ),
+          body: Center(
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Image.file(
+                File(photoPath),
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   void _showSettingsDialog() {
@@ -78,7 +128,7 @@ class _EventsScreenState extends State<EventsScreen> {
             ),
             onPressed: () {
               Navigator.pop(ctx);
-              openAppSettings(); // Opens device settings for this app
+              openAppSettings();
             },
             child: const Text('Open Settings'),
           ),
@@ -116,13 +166,6 @@ class _EventsScreenState extends State<EventsScreen> {
             onPressed: () => context.read<EventProvider>().loadEvents(),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFF27C7D4),
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.camera_alt_outlined),
-        label: const Text('Ajouter photo'),
-        onPressed: _pickImageFromCamera,
       ),
       body: Consumer<EventProvider>(
         builder: (context, provider, child) {
@@ -340,20 +383,34 @@ class _EventsScreenState extends State<EventsScreen> {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       itemCount: events.length,
       itemBuilder: (context, index) {
-        return _EventCard(event: events[index], isDark: isDark);
+        return _EventCard(
+          event: events[index],
+          isDark: isDark,
+          onTakePhoto: () => _pickImageForEvent(events[index]),
+          onViewPhoto: events[index].photoPath != null
+              ? () => _viewPhoto(events[index].photoPath!)
+              : null,
+        );
       },
     );
   }
 }
 
 // ─────────────────────────────────────────────────────────────
-// Event Card
+// Event Card (Updated with per-event photo support)
 // ─────────────────────────────────────────────────────────────
 class _EventCard extends StatelessWidget {
-  const _EventCard({required this.event, required this.isDark});
+  const _EventCard({
+    required this.event,
+    required this.isDark,
+    required this.onTakePhoto,
+    required this.onViewPhoto,
+  });
 
   final Event event;
   final bool isDark;
+  final VoidCallback onTakePhoto;
+  final VoidCallback? onViewPhoto;
 
   Color _categoryColor(String category) {
     switch (category) {
@@ -398,6 +455,7 @@ class _EventCard extends StatelessWidget {
     final cardColor =
         isDark ? const Color(0xFF1A1A2E) : const Color(0xFFFDF0E7);
     final color = _categoryColor(event.category);
+    final bool hasPhoto = event.photoPath != null;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -429,7 +487,7 @@ class _EventCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header row
+                // Header row with camera icon
                 Row(
                   children: [
                     Container(
@@ -477,6 +535,18 @@ class _EventCard extends StatelessWidget {
                           ),
                         ],
                       ),
+                    ),
+                    // Camera icon to take photo for THIS event
+                    IconButton(
+                      onPressed: onTakePhoto,
+                      icon: Icon(
+                        hasPhoto ? Icons.camera_enhance_outlined : Icons.camera_alt_outlined,
+                        color: hasPhoto ? const Color(0xFF4CAF50) : const Color(0xFF555555),
+                        size: 20,
+                      ),
+                      tooltip: hasPhoto ? 'Retake photo' : 'Take photo',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                     ),
                   ],
                 ),
@@ -559,6 +629,52 @@ class _EventCard extends StatelessWidget {
                     );
                   }).toList(),
                 ),
+                // Photo attached label (if photo exists)
+                if (hasPhoto) ...[
+                  const SizedBox(height: 10),
+                  InkWell(
+                    onTap: onViewPhoto,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4CAF50).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFF4CAF50).withOpacity(0.3),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.photo_library_outlined,
+                            size: 14,
+                            color: Color(0xFF4CAF50),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            'Photo attached',
+                            style: TextStyle(
+                              color: Color(0xFF4CAF50),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.open_in_new_rounded,
+                            size: 12,
+                            color: const Color(0xFF4CAF50).withOpacity(0.7),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
