@@ -77,7 +77,7 @@ class TimetableScreen extends StatelessWidget {
                         Icon(
                           Icons.calendar_today_outlined,
                           size: 56,
-                          color: Colors.grey.withValues(alpha: 0.5),
+                          color: Colors.grey.withOpacity(0.5),
                         ),
                         const SizedBox(height: 16),
                         const Text(
@@ -185,7 +185,7 @@ class _DayHeader extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: const Color(0xFF27C7D4).withValues(alpha: 0.15),
+                color: const Color(0xFF27C7D4).withOpacity(0.15),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Text(
@@ -201,8 +201,8 @@ class _DayHeader extends StatelessWidget {
             child: Divider(
               indent: 8,
               color: isDark
-                  ? Colors.white.withValues(alpha: 0.1)
-                  : Colors.black.withValues(alpha: 0.1),
+                  ? Colors.white.withOpacity(0.1)
+                  : Colors.black.withOpacity(0.1),
             ),
           ),
         ],
@@ -253,7 +253,7 @@ class _CourseCard extends StatelessWidget {
             : const Color(0xFF1A1A2E);
 
     final textSecondary = isToday
-        ? Colors.white.withValues(alpha: 0.85)
+        ? Colors.white.withOpacity(0.85)
         : const Color(0xFF555555);
 
     return Container(
@@ -263,7 +263,7 @@ class _CourseCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
+            color: Colors.black.withOpacity(0.06),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -278,8 +278,8 @@ class _CourseCard extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 color: isToday
-                    ? Colors.white.withValues(alpha: 0.2)
-                    : typeColor.withValues(alpha: 0.12),
+                    ? Colors.white.withOpacity(0.2)
+                    : typeColor.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -318,8 +318,8 @@ class _CourseCard extends StatelessWidget {
                       horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: isToday
-                        ? Colors.white.withValues(alpha: 0.2)
-                        : typeColor.withValues(alpha: 0.12),
+                        ? Colors.white.withOpacity(0.2)
+                        : typeColor.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(

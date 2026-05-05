@@ -14,28 +14,77 @@ class EventsScreen extends StatefulWidget {
 
 class _EventsScreenState extends State<EventsScreen> {
   Future<void> _pickImageFromCamera() async {
+    // Request camera permission
     final status = await Permission.camera.request();
-    if (status.isDenied || status.isPermanentlyDenied) {
+
+    if (status.isGranted) {
+      // Permission granted — open camera
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.camera);
+      if (image != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Image captured: ${image.path}'),
+            backgroundColor: const Color(0xFF27C7D4),
+          ),
+        );
+      }
+    } else if (status.isPermanentlyDenied) {
+      // User selected "Don't ask again" — open app settings
+      if (mounted) {
+        _showSettingsDialog();
+      }
+    } else {
+      // Denied but can ask again
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Camera permission denied'),
+            content: Text('Camera permission is required to take photos.'),
             backgroundColor: Color(0xFFEA5863),
           ),
         );
       }
-      return;
     }
-    final picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.camera);
-    if (image != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Image captured: ${image.path}'),
-          backgroundColor: const Color(0xFF27C7D4),
+  }
+
+  void _showSettingsDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Camera Permission Required',
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
-      );
-    }
+        content: const Text(
+          'Camera access was permanently denied. Please enable it in your device settings.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Color(0xFF555555)),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF27C7D4),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              openAppSettings(); // Opens device settings for this app
+            },
+            child: const Text('Open Settings'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

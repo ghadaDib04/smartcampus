@@ -66,8 +66,8 @@ class _MainScreenState extends State<MainScreen>
     // Dark mode : fond sombre, light mode : blanc
     final navBgColor = isDark ? const Color(0xFF1A1A2E) : Colors.white;
     final shadowColor = isDark
-        ? Colors.black.withValues(alpha: 0.4)
-        : const Color(0xFF1A1A2E).withValues(alpha: 0.08);
+        ? Colors.black.withOpacity(0.4)
+        : const Color(0xFF1A1A2E).withOpacity(0.08);
 
     return Scaffold(
       body: IndexedStack(
@@ -89,7 +89,7 @@ class _MainScreenState extends State<MainScreen>
               offset: const Offset(0, -4),
             ),
             BoxShadow(
-              color: const Color(0xFF27C7D4).withValues(alpha: 0.06),
+              color: const Color(0xFF27C7D4).withOpacity(0.06),
               blurRadius: 40,
               offset: const Offset(0, -8),
             ),
@@ -126,7 +126,7 @@ class _MainScreenState extends State<MainScreen>
 
 
     final unselectedColor =
-    isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF555555);
+    isDark ? Colors.white.withOpacity(0.5) : const Color(0xFF555555);
 
     return GestureDetector(
       onTap: () => _onItemTapped(index),
@@ -147,7 +147,7 @@ class _MainScreenState extends State<MainScreen>
           boxShadow: isSelected
               ? [
             BoxShadow(
-              color: const Color(0xFF27C7D4).withValues(alpha: 0.35),
+              color: const Color(0xFF27C7D4).withOpacity(0.35),
               blurRadius: 16,
               spreadRadius: 2,
               offset: const Offset(0, 4),

@@ -41,7 +41,7 @@ class SmartCampusApp extends StatelessWidget {
                 secondary: const Color(0xFFFE9063),
               ),
               useMaterial3: true,
-              cardTheme: const CardThemeData(
+              cardTheme: const CardTheme(
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -55,7 +55,7 @@ class SmartCampusApp extends StatelessWidget {
                 brightness: Brightness.dark,
               ),
               useMaterial3: true,
-              cardTheme: const CardThemeData(
+              cardTheme: const CardTheme(
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(16)),
