@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../providers/auth_provider.dart';
 import '../../data/models/timetable_item.dart';
 
@@ -26,6 +30,89 @@ class TimetableScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _exportTimetable(BuildContext context, List<TimetableItem> timetable) async {
+    try {
+      // Convert timetable to JSON
+      final List<Map<String, dynamic>> jsonList = timetable.map((item) => {
+        'subject': item.subject,
+        'room': item.room,
+        'day': item.day.displayName,
+        'startTime': item.startTime,
+        'endTime': item.endTime,
+        'type': item.type,
+      }).toList();
+
+      final jsonString = const JsonEncoder.withIndent('  ').convert({
+        'exportedAt': DateTime.now().toIso8601String(),
+        'totalCourses': timetable.length,
+        'timetable': jsonList,
+      });
+
+      // Force save to public Downloads folder
+      String filePath;
+      final fileName = 'smartcampus_timetable_${DateTime.now().millisecondsSinceEpoch}.json';
+
+      if (Platform.isAndroid) {
+        // For Android 10+ (API 29+), we use MediaStore approach via a plugin or direct path
+        // For older Android, direct path works
+        final downloadsDir = Directory('/storage/emulated/0/Download');
+        
+        // Create directory if it doesn't exist
+        if (!await downloadsDir.exists()) {
+          await downloadsDir.create(recursive: true);
+        }
+        
+        filePath = '${downloadsDir.path}/$fileName';
+      } else {
+        // iOS fallback - use app documents
+        final appDir = await getApplicationDocumentsDirectory();
+        filePath = '${appDir.path}/$fileName';
+      }
+
+      // Write the file
+      final file = File(filePath);
+      await file.writeAsString(jsonString);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Timetable exported to Downloads!',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'File: $fileName',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF27C7D4),
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'OK',
+              textColor: Colors.white,
+              onPressed: () {},
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Export failed: ${e.toString()}'),
+            backgroundColor: const Color(0xFFEA5863),
+          ),
+        );
+      }
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -123,19 +210,18 @@ class TimetableScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 32, vertical: 14),
                 ),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content:
-                          Text('Export feature coming from Person 3'),
-                      backgroundColor: Color(0xFF27C7D4),
+                onPressed: () => _exportTimetable(context, timetable),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.download_rounded, size: 20),
+                    SizedBox(width: 10),
+                    Text(
+                      'Export JSON',
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
                     ),
-                  );
-                },
-                child: const Text(
-                  'Export JSON',
-                  style: TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
+                  ],
                 ),
               ),
             ),

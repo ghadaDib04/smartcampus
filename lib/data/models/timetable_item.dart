@@ -373,7 +373,7 @@ class TimetableItem {
            subject: 'Mobile Operating Systems',
            professor: 'Dr. Benali',
            room: 'Room 101',
-           startTime: '16:22',
+           startTime: '16:42',
            endTime: '17:15',
            day: DayOfWeek.tuesday,
            type: 'Lecture',
