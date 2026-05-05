@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../providers/auth_provider.dart';
 import '../../data/models/timetable_item.dart';
 
+
 class TimetableScreen extends StatelessWidget {
   const TimetableScreen({super.key});
 
@@ -112,7 +113,7 @@ class TimetableScreen extends StatelessWidget {
       }
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
