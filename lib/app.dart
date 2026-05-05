@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import 'presentation/providers/announcement_provider.dart';
 import 'presentation/providers/settings_provider.dart';
 import 'presentation/providers/auth_provider.dart';
+import 'presentation/providers/event_provider.dart';
 import 'presentation/screens/timetable_screen.dart';
+import 'presentation/screens/map_screen.dart';
 import 'presentation/screens/main_screen.dart';
 import 'presentation/screens/announcements_screen.dart';
 import 'presentation/screens/events_screen.dart';
@@ -24,6 +26,7 @@ class SmartCampusApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AnnouncementProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()..loadSettings()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => EventProvider()),
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, settings, child) {
@@ -37,7 +40,7 @@ class SmartCampusApp extends StatelessWidget {
                 secondary: const Color(0xFFFE9063),
               ),
               useMaterial3: true,
-              cardTheme: const CardThemeData(
+              cardTheme: const CardTheme(
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -51,7 +54,7 @@ class SmartCampusApp extends StatelessWidget {
                 brightness: Brightness.dark,
               ),
               useMaterial3: true,
-              cardTheme: const CardThemeData(
+              cardTheme: const CardTheme(
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -83,6 +86,9 @@ class SmartCampusApp extends StatelessWidget {
                 case '/settings':
                   return MaterialPageRoute(
                       builder: (_) => const SettingsScreen());
+                case '/map':
+                  return MaterialPageRoute(
+                      builder: (_) => const MapScreen());
                 case '/timetable':
                   return MaterialPageRoute(
                       builder: (_) => const TimetableScreen());
