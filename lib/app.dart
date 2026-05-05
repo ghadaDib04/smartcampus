@@ -5,6 +5,7 @@ import 'presentation/providers/settings_provider.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/event_provider.dart';
 import 'presentation/screens/timetable_screen.dart';
+import 'presentation/screens/map_screen.dart';
 import 'presentation/screens/main_screen.dart';
 import 'presentation/screens/announcements_screen.dart';
 import 'presentation/screens/events_screen.dart';
@@ -85,6 +86,9 @@ class SmartCampusApp extends StatelessWidget {
                 case '/settings':
                   return MaterialPageRoute(
                       builder: (_) => const SettingsScreen());
+                case '/map':
+                  return MaterialPageRoute(
+                      builder: (_) => const MapScreen());
                 case '/timetable':
                   return MaterialPageRoute(
                       builder: (_) => const TimetableScreen());
