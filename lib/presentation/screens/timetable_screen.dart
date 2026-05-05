@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import '../../data/models/timetable_item.dart';
 
 class TimetableScreen extends StatelessWidget {
@@ -28,7 +30,12 @@ class TimetableScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final today = _todayAsDayOfWeek();
-    final timetable = TimetableItem.getSampleTimetable();
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final user = authProvider.currentUser;
+    final timetable = TimetableItem.getSampleTimetable(
+      group: user?.group ?? '1',
+      specialty: user?.specialty ?? 'Computer Science',
+    );
 
     // Group by day in enum order
     final Map<DayOfWeek, List<TimetableItem>> grouped = {};

@@ -24,7 +24,8 @@ class SmartCampusApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AnnouncementProvider()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()..loadSettings()),
+        ChangeNotifierProvider(
+            create: (_) => SettingsProvider()..loadSettings()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => EventProvider()),
       ],
@@ -40,7 +41,7 @@ class SmartCampusApp extends StatelessWidget {
                 secondary: const Color(0xFFFE9063),
               ),
               useMaterial3: true,
-              cardTheme: const CardTheme(
+              cardTheme: const CardThemeData(
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -54,7 +55,7 @@ class SmartCampusApp extends StatelessWidget {
                 brightness: Brightness.dark,
               ),
               useMaterial3: true,
-              cardTheme: const CardTheme(
+              cardTheme: const CardThemeData(
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -69,14 +70,11 @@ class SmartCampusApp extends StatelessWidget {
                   return MaterialPageRoute(
                       builder: (_) => const SplashScreen());
                 case '/login':
-                  return MaterialPageRoute(
-                      builder: (_) => const LoginScreen());
+                  return MaterialPageRoute(builder: (_) => const LoginScreen());
                 case '/':
-                  return MaterialPageRoute(
-                      builder: (_) => const MainScreen());
+                  return MaterialPageRoute(builder: (_) => const MainScreen());
                 case '/home':
-                  return MaterialPageRoute(
-                      builder: (_) => const HomeScreen());
+                  return MaterialPageRoute(builder: (_) => const HomeScreen());
                 case '/announcements':
                   return MaterialPageRoute(
                       builder: (_) => const AnnouncementsScreen());
@@ -87,8 +85,7 @@ class SmartCampusApp extends StatelessWidget {
                   return MaterialPageRoute(
                       builder: (_) => const SettingsScreen());
                 case '/map':
-                  return MaterialPageRoute(
-                      builder: (_) => const MapScreen());
+                  return MaterialPageRoute(builder: (_) => const MapScreen());
                 case '/timetable':
                   return MaterialPageRoute(
                       builder: (_) => const TimetableScreen());

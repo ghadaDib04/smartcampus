@@ -67,14 +67,13 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final user = context.watch<AuthProvider>().currentUser;
-
-    final timetable = user != null
-        ? TimetableItem.getSampleTimetable(
-            group: user.group,
-            specialty: user.specialty,
-          )
-        : TimetableItem.getSampleTimetable();
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final user = authProvider.currentUser;
+    final timetable = TimetableItem.getSampleTimetable(
+      group: user?.group ?? '1',
+      specialty: user?.specialty ?? 'Computer Science',
+    );
+    final userName = authProvider.currentUser?.name ?? 'Student';
 
     final nextClass = _getNextClass(timetable);
     final todayCourseCount = _countTodayCourses(timetable);
@@ -102,6 +101,7 @@ class HomeScreen extends StatelessWidget {
               _WelcomeCard(
                 greeting: _greetingPrefix(),
                 user: user,
+                userName: userName,
               ),
               const SizedBox(height: 20),
               _DashboardStatsRow(
@@ -139,10 +139,12 @@ class _WelcomeCard extends StatelessWidget {
   const _WelcomeCard({
     required this.greeting,
     required this.user,
+    required this.userName,
   });
 
   final String greeting;
   final dynamic user;
+  final String userName;
 
   String _formatDate() {
     const days = [
@@ -159,10 +161,6 @@ class _WelcomeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = user != null
-        ? (user.name as String).split(' ').first
-        : 'Amira';
-
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -189,7 +187,7 @@ class _WelcomeCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '$greeting, $name 👋',
+                  '$greeting, $userName 👋',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -221,9 +219,7 @@ class _WelcomeCard extends StatelessWidget {
             radius: 28,
             backgroundColor: Colors.white.withValues(alpha: 0.25),
             child: Text(
-              user != null
-                  ? (user.name as String)[0].toUpperCase()
-                  : 'A',
+              userName[0].toUpperCase(),
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 24,

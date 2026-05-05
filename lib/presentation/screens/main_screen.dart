@@ -4,8 +4,7 @@ import 'announcements_screen.dart';
 import 'events_screen.dart';
 import 'settings_screen.dart';
 import 'timetable_screen.dart';
-// TODO: replace _MapPlaceholderScreen with the real import once Person 3 creates map_screen.dart:
-// import 'map_screen.dart';
+import 'map_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -27,7 +26,7 @@ class _MainScreenState extends State<MainScreen>
     EventsScreen(),
     SettingsScreen(),
     TimetableScreen(),
-    _MapPlaceholderScreen(), // TODO: replace with MapScreen() when map_screen.dart exists
+    MapScreen(),
   ];
 
   late AnimationController _animController;
@@ -186,59 +185,6 @@ class _MainScreenState extends State<MainScreen>
                 letterSpacing: isSelected ? 0.5 : 0,
               ),
               child: Text(label),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// Map Placeholder — remove when Person 3 delivers map_screen.dart
-// Replace: _MapPlaceholderScreen() → MapScreen()
-//          and uncomment: import 'map_screen.dart';
-// ─────────────────────────────────────────────────────────────
-class _MapPlaceholderScreen extends StatelessWidget {
-  const _MapPlaceholderScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF27C7D4),
-        foregroundColor: Colors.white,
-        centerTitle: true,
-        elevation: 0,
-        title: const Text(
-          'Map',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-        ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.map_outlined,
-              size: 64,
-              color: const Color(0xFF27C7D4).withValues(alpha: 0.5),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Map coming soon',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white70 : const Color(0xFF1A1A2E),
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Waiting for Person 3 — map_screen.dart',
-              style: TextStyle(fontSize: 13, color: Color(0xFF555555)),
             ),
           ],
         ),
