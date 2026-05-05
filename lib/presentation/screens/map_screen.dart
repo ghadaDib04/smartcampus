@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -288,6 +289,75 @@ class _MapScreenState extends State<MapScreen> {
               ],
             ),
           ),
+
+        const SizedBox(height: 16),
+
+          // QR Code card
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFE9063).withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.qr_code_rounded,
+                        color: Color(0xFFFE9063),
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Share My Location',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isDark
+                            ? Colors.white
+                            : const Color(0xFF1A1A2E),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                QrImageView(
+                  data:
+                      'geo:${_position!.latitude},${_position!.longitude}',
+                  version: QrVersions.auto,
+                  size: 180,
+                  backgroundColor: Colors.white,
+                  padding: const EdgeInsets.all(8),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Scan with any camera app to open in Maps',
+                  style: TextStyle(
+                    color: Color(0xFF555555),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
         ],
       ),
     );
