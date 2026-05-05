@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:image_picker/image_picker.dart';
 import '../providers/event_provider.dart';
 import '../../data/models/event.dart';
 
@@ -11,6 +13,31 @@ class EventsScreen extends StatefulWidget {
 }
 
 class _EventsScreenState extends State<EventsScreen> {
+  Future<void> _pickImageFromCamera() async {
+    final status = await Permission.camera.request();
+    if (status.isDenied || status.isPermanentlyDenied) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Camera permission denied'),
+            backgroundColor: Color(0xFFEA5863),
+          ),
+        );
+      }
+      return;
+    }
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.camera);
+    if (image != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Image captured: ${image.path}'),
+          backgroundColor: const Color(0xFF27C7D4),
+        ),
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -41,7 +68,13 @@ class _EventsScreenState extends State<EventsScreen> {
           ),
         ],
       ),
-      // TODO: Person 2 — add FloatingActionButton for camera here
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: const Color(0xFF27C7D4),
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.camera_alt_outlined),
+        label: const Text('Ajouter photo'),
+        onPressed: _pickImageFromCamera,
+      ),
       body: Consumer<EventProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) return _buildLoading();
