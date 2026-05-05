@@ -9,8 +9,9 @@ class Event {
   final String category;
   final List<String> tags;
   final bool isBookmarked;
+  String? photoPath;
 
-  const Event({
+  Event({
     required this.id,
     required this.title,
     required this.location,
@@ -20,6 +21,7 @@ class Event {
     required this.category,
     required this.tags,
     required this.isBookmarked,
+    this.photoPath,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
