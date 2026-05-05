@@ -3,9 +3,14 @@ import 'home_screen.dart';
 import 'announcements_screen.dart';
 import 'events_screen.dart';
 import 'settings_screen.dart';
+import 'timetable_screen.dart';
+import 'map_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
+
+  // Allows child screens to switch the bottom nav tab programmatically
+  static void Function(int)? switchTab;
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -20,6 +25,8 @@ class _MainScreenState extends State<MainScreen>
     AnnouncementsScreen(),
     EventsScreen(),
     SettingsScreen(),
+    TimetableScreen(),
+    MapScreen(),
   ];
 
   late AnimationController _animController;
@@ -27,6 +34,7 @@ class _MainScreenState extends State<MainScreen>
   @override
   void initState() {
     super.initState();
+    MainScreen.switchTab = _onItemTapped;
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 350),
@@ -36,6 +44,7 @@ class _MainScreenState extends State<MainScreen>
 
   @override
   void dispose() {
+    MainScreen.switchTab = null;
     _animController.dispose();
     super.dispose();
   }
@@ -96,6 +105,8 @@ class _MainScreenState extends State<MainScreen>
                 _buildNavItem(1, Icons.campaign_outlined, Icons.campaign, 'News', isDark),
                 _buildNavItem(2, Icons.event_outlined, Icons.event, 'Events', isDark),
                 _buildNavItem(3, Icons.settings_outlined, Icons.settings, 'Settings', isDark),
+                _buildNavItem(4, Icons.calendar_today_outlined, Icons.calendar_today, 'Timetable', isDark),
+                _buildNavItem(5, Icons.map_outlined, Icons.map, 'Map', isDark),
               ],
             ),
           ),
@@ -110,7 +121,7 @@ class _MainScreenState extends State<MainScreen>
       IconData activeIcon,
       String label,
       bool isDark,
-      ) {
+  ) {
     final bool isSelected = _currentIndex == index;
 
 
