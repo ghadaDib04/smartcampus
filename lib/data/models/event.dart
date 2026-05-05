@@ -38,7 +38,7 @@ class Event {
         '${endHour.toString().padLeft(2, '0')}:${endMinute.toString().padLeft(2, '0')}';
 
     final DateTime date =
-        DateTime.now().add(const Duration(days: 14));
+        DateTime.now().add(Duration(days: id % 30));
 
     // Derive category
     final String category = _derivedCategory(id);
