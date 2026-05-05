@@ -33,21 +33,6 @@
 
 ---
 
-## 🏗️ Architecture
-lib/
-├── core/
-│   ├── services/        # AuthService · NotificationService · ConnectivityService
-│   └── network/         # ConnectivityService
-├── data/
-│   ├── models/          # User · Announcement · Event · TimetableItem
-│   ├── datasources/     # LocalDataSource (SQLite) · RemoteDataSource (Dio)
-│   └── repositories/    # AnnouncementRepository · EventRepository
-└── presentation/
-├── providers/        # AuthProvider · SettingsProvider · AnnouncementProvider · EventProvider
-└── screens/          # login · home · timetable · events · map · announcements · settings
-
----
-
 ## 📱 OS Concepts Demonstrated
 
 - **Runtime Permissions** — Location, Camera, Notifications with full granted / denied / permanently denied state machines
