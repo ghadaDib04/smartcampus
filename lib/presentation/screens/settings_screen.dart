@@ -214,6 +214,26 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
 
+              const SizedBox(height: 16),
+
+              // ── Campus Map ────────────────────────────────
+              _SectionLabel(label: 'Campus', isDark: isDark),
+              const SizedBox(height: 8),
+              _SettingsCard(
+                isDark: isDark,
+                children: [
+                  _ActionTile(
+                    icon: Icons.location_on_outlined,
+                    iconColor: const Color(0xFF27C7D4),
+                    title: 'Campus Map',
+                    subtitle: 'View your GPS position on campus',
+                    isDark: isDark,
+                    onTap: () => Navigator.pushNamed(context, '/map'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
+
               // ── Logout Button ─────────────────────────────
               SizedBox(
                 width: double.infinity,
@@ -596,6 +616,78 @@ class _Separator extends StatelessWidget {
       color: isDark
           ? Colors.white.withOpacity(0.08)
           : Colors.black.withOpacity(0.08),
+    );
+  }
+}
+// ─────────────────────────────────────────────────────────────
+// Action Tile (navigable)
+// ─────────────────────────────────────────────────────────────
+class _ActionTile extends StatelessWidget {
+  const _ActionTile({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF555555),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Color(0xFF555555),
+              size: 20,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -9,6 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  geolocator: ^13.0.2       # <-- ADD THIS
+  permission_handler: ^11.4.0
+  image_picker: ^1.1.2
 
   cupertino_icons: ^1.0.8
 
@@ -32,6 +35,7 @@ dependencies:
 
   flutter_local_notifications: ^17.2.4
   timezone: ^0.9.4
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:
@@ -42,3 +46,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+
+
+dependency_overrides:
+  geolocator_android: 4.6.1
